@@ -1,0 +1,16 @@
+{
+  "name": "אמת או חובה - משחק משפחתי",
+  "short_name": "אמת או חובה",
+  "description": "משחק משפחתי מהנה של אמת או חובה",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "theme_color": "#667eea",
+  "background_color": "#667eea",
+  "lang": "he",
+  "dir": "rtl",
+  "categories": [
+    "games",
+    "entertainment"
+  ]
+}
