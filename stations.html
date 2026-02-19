@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>מעקב חיובי תחנות - יומן הדרייבר</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme:  {
+                extend:  {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                    },
+                    fontFamily: {
+                        heebo: ['Heebo', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family:'Heebo', sans-serif;
+            background:linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height:100vh;
+        }
+        
+        .dark body {
+            background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+        }
+        
+        .dark.card {
+            background: rgba(30, 41, 59, 0.95);
+            border-color: rgba(148, 163, 184, 0.1);
+        }
+        
+        .station-card {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .station-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .station-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+        }
+        
+        .station-card: hover::before {
+            opacity: 1;
+        }
+        
+        .private-card {
+            border:  2px dashed #8b5cf6;
+        }
+        
+        .private-card:: before {
+            background: linear-gradient(90deg, #8b5cf6, #a855f7);
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background:  linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+        }
+        
+        .status-paid {
+            background:  linear-gradient(135deg, #dcfce7, #bbf7d0);
+            color: #166534;
+        }
+        
+        .status-disputed {
+            background:  linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #dc2626;
+        }
+        
+        .duplicate-alert {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border:  2px solid #ef4444;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { border-color: #ef4444; }
+            50% { border-color: #fca5a5; }
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            color: #64748b;
+        }
+        
+        .btn-success {
+            background:  linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        .btn-purple {
+            background:  linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+        
+        .input {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 14px 18px;
+            width: 100%;
+            font-size:  15px;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+        
+        .input:focus {
+            outline:  none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            background: white;
+        }
+        
+        .dark.input {
+            background: #374151;
+            border-color: #4b5563;
+            color: #f3f4f6;
+        }
+        
+        .modal-backdrop {
+            background:  rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #ffffff, #f8fafc);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+        
+        .dark.summary-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-color: #374151;
+        }
+        
+        . type-badge-bot {
+            background:  linear-gradient(135deg, #dbeafe, #bfdbfe);
+            color: #1e40af;
+        }
+        
+        .type-badge-dispatcher {
+            background:  linear-gradient(135deg, #f3e8ff, #e9d5ff);
+            color: #7c3aed;
+        }
+        
+        .type-badge-private {
+            background:  linear-gradient(135deg, #fef3c7, #fde68a);
+            color:  #b45309;
+        }
+        
+        .charge-item {
+            transition: all 0.2s ease;
+        }
+        
+        .charge-item:hover {
+            background: #f1f5f9 !important;
+        }
+        
+        .dark.charge-item:hover {
+            background: #374151 !important;
+        }
+        
+        .action-btn {
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .tabs {
+            display:  flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding:  10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor:  pointer;
+            transition: all 0.2s ease;
+            background: #f1f5f9;
+            color: #64748b;
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+        
+        .tab: hover: not(.active) {
+            background: #e2e8f0;
+        }
+        
+        .ride-route {
+            display:  flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .ride-route.from {
+            color:  #10b981;
+        }
+        
+        .ride-route.to {
+            color: #ef4444;
+        }
+        
+        .ride-route.arrow {
+            color:  #94a3b8;
+        }
+        
+        .commission-badge {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #b45309;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        
+        .ride-card {
+            border-right: 4px solid #3b82f6;
+        }
+        
+        .ride-card.paid {
+            border-right-color: #10b981;
+        }
+        
+        .ride-card.disputed {
+            border-right-color:  #ef4444;
+        }
+        
+        .commission-rate {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            padding:  2px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #b45309;
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+    <!-- Header -->
+    <header class="mb-8">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-car text-white text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-black text-gray-800 dark:text-gray-100">מעקב נסיעות וחיובים</h1>
+                    <p class="text-gray-500 dark:text-gray-400">נהל את הנסיעות והעמלות שלך מול תחנות ואנשים פרטיים</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-3">
+                <a href="index.html" class="btn btn-secondary">
+                    <i class="fas fa-arrow-right"></i>
+                    חזרה למערכת
+                </a>
+                <button id="addStationBtn" class="btn">
+                    <i class="fas fa-plus"></i>
+                    הוסף תחנה
+                </button>
+                <button id="addRideBtn" class="btn btn-success">
+                    <i class="fas fa-car"></i>
+                    הוסף נסיעה
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Monthly Summary -->
+    <div class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+        <div class="summary-card">
+            <div class="text-3xl font-black text-blue-600 mb-2" id="totalRides">0</div>
+            <div class="text-sm text-gray-500">נסיעות</div>
+        </div>
+        <div class="summary-card">
+            <div class="text-3xl font-black text-gray-600 mb-2" id="totalRidesAmount">₪0</div>
+            <div class="text-sm text-gray-500">סה"כ נסיעות</div>
+        </div>
+        <div class="summary-card">
+            <div class="text-3xl font-black text-orange-600 mb-2" id="totalCommission">₪0</div>
+            <div class="text-sm text-gray-500">עמלות (12%)</div>
+        </div>
+        <div class="summary-card">
+            <div class="text-3xl font-black text-green-600 mb-2" id="totalPaid">₪0</div>
+            <div class="text-sm text-gray-500">עמלות ששולמו</div>
+        </div>
+        <div class="summary-card">
+            <div class="text-3xl font-black text-red-600 mb-2" id="totalPending">₪0</div>
+            <div class="text-sm text-gray-500">יתרה לתשלום</div>
+        </div>
+        <div class="summary-card">
+            <div class="text-3xl font-black text-purple-600 mb-2" id="duplicatesCount">0</div>
+            <div class="text-sm text-gray-500">⚠️ כפילויות</div>
+        </div>
+    </div>
+
+    <!-- Duplicate Alerts -->
+    <div id="duplicateAlerts" class="mb-8 hidden">
+        <div class="card duplicate-alert">
+            <div class="flex items-center gap-3 mb-4">
+                <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                <h3 class="text-xl font-bold text-red-700">זוהו נסיעות כפולות פוטנציאליות! </h3>
+            </div>
+            <div id="duplicatesList" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab active" data-tab="stations" onclick="switchTab('stations')">
+            <i class="fas fa-building ml-2"></i>
+            תחנות
+        </div>
+        <div class="tab" data-tab="rides" onclick="switchTab('rides')">
+            <i class="fas fa-car ml-2"></i>
+            כל הנסיעות
+        </div>
+        <div class="tab" data-tab="private" onclick="switchTab('private')">
+            <i class="fas fa-user ml-2"></i>
+            פרטיים
+        </div>
+        <div class="tab" data-tab="unpaid" onclick="switchTab('unpaid')">
+            <i class="fas fa-clock ml-2"></i>
+            ממתין לתשלום
+        </div>
+    </div>
+
+    <!-- Stations Grid -->
+    <div id="stationsSection" class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-3">
+            <i class="fas fa-building text-blue-500"></i>
+            התחנות שלי
+        </h2>
+        
+        <div id="stationsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="card text-center py-12 text-gray-400">
+                <i class="fas fa-store text-6xl mb-4 opacity-50"></i>
+                <p class="text-lg">עדיין לא הוספת תחנות</p>
+                <p class="text-sm mt-2">לחץ על "הוסף תחנה" כדי להתחיל</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Rides Section -->
+    <div id="ridesSection" class="mb-8 hidden">
+        <div class="card">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
+                    <i class="fas fa-car text-blue-500"></i>
+                    כל הנסיעות
+                </h2>
+                <div class="flex flex-wrap gap-2">
+                    <select id="filterStatus" class="input text-sm py-2 px-4 w-auto" onchange="filterRides()">
+                        <option value="all">כל הסטטוסים</option>
+                        <option value="pending">ממתין לתשלום</option>
+                        <option value="paid">שולם</option>
+                        <option value="disputed">במחלוקת</option>
+                    </select>
+                    <select id="filterType" class="input text-sm py-2 px-4 w-auto" onchange="filterRides()">
+                        <option value="all">כל המקורות</option>
+                        <option value="bot">מבוט</option>
+                        <option value="dispatcher">מסדרן</option>
+                        <option value="private">פרטי</option>
+                    </select>
+                    <select id="filterStation" class="input text-sm py-2 px-4 w-auto" onchange="filterRides()">
+                        <option value="all">כל התחנות</option>
+                    </select>
+                    <input type="text" id="searchRides" class="input text-sm py-2 px-4 w-auto" placeholder="🔍 חיפוש מקור/יעד..." oninput="filterRides()">
+                </div>
+            </div>
+            
+            <div id="ridesList" class="space-y-3">
+                <div class="text-center py-8 text-gray-400">
+                    <i class="fas fa-car text-4xl mb-4 opacity-50"></i>
+                    <p>אין נסיעות להצגה</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Private Charges Section -->
+    <div id="privateSection" class="mb-8 hidden">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-3">
+            <i class="fas fa-user text-purple-500"></i>
+            נסיעות מאנשים פרטיים
+        </h2>
+        
+        <div id="privateRidesList" class="space-y-3">
+            <div class="card text-center py-12 text-gray-400">
+                <i class="fas fa-user-plus text-6xl mb-4 opacity-50"></i>
+                <p class="text-lg">אין נסיעות פרטיות</p>
+                <p class="text-sm mt-2">לחץ על "הוסף נסיעה" כדי להוסיף</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unpaid Section -->
+    <div id="unpaidSection" class="mb-8 hidden">
+        <div class="card">
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-3">
+                <i class="fas fa-clock text-orange-500"></i>
+                ממתין לתשלום
+            </h2>
+            
+            <div id="unpaidRidesList" class="space-y-3">
+                <div class="text-center py-8 text-gray-400">
+                    <i class="fas fa-check-circle text-4xl mb-4 opacity-50"></i>
+                    <p>כל העמלות שולמו!  🎉</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Station Modal -->
+    <div id="stationModal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+        <div class="card max-w-md w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="stationModalTitle" class="text-xl font-bold">הוסף תחנה חדשה</h3>
+                <button id="closeStationModal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="stationForm" class="space-y-4">
+                <input type="hidden" id="stationId" value="">
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-store text-blue-500 ml-1"></i>
+                        שם התחנה
+                    </label>
+                    <input type="text" id="stationName" class="input" placeholder="לדוגמה: תחנת השלום" required>
+                </div>
+                
+                <button type="submit" class="btn w-full btn-success">
+                    <i class="fas fa-save"></i>
+                    שמור תחנה
+                </button>
+            </form>
+        </div>
+    </div>
+			<button id="cleanOldDataBtn" class="btn btn-warning">
+    <i class="fas fa-broom"></i>
+    נקה נתונים ישנים
+</button>
+    <!-- Add/Edit Ride Modal -->
+    <div id="rideModal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4 overflow-y-auto">
+        <div class="card max-w-lg w-full my-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="rideModalTitle" class="text-xl font-bold">הוסף נסיעה חדשה</h3>
+                <button id="closeRideModal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+			
+
+            
+            <form id="rideForm" class="space-y-4">
+                <input type="hidden" id="rideId" value="">
+                
+                <!-- Source Type Selection -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-tag text-purple-500 ml-1"></i>
+                        מקור הנסיעה
+                    </label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" class="source-type-btn active" data-type="bot" onclick="selectSourceType('bot')">
+                            <i class="fas fa-robot text-xl mb-1"></i>
+                            <span class="text-sm">בוט</span>
+                        </button>
+                        <button type="button" class="source-type-btn" data-type="dispatcher" onclick="selectSourceType('dispatcher')">
+                            <i class="fas fa-user-tie text-xl mb-1"></i>
+                            <span class="text-sm">סדרן</span>
+                        </button>
+                        <button type="button" class="source-type-btn" data-type="private" onclick="selectSourceType('private')">
+                            <i class="fas fa-user text-xl mb-1"></i>
+                            <span class="text-sm">פרטי</span>
+                        </button>
+                    </div>
+                    <input type="hidden" id="rideSourceType" value="bot">
+                </div>
+                
+                <!-- Station Selection (for bot/dispatcher) -->
+                <div id="stationSelectGroup">
+                    <label class="block text-sm font-semibold text-gray-700 dark: text-gray-300 mb-2">
+                        <i class="fas fa-building text-blue-500 ml-1"></i>
+                        תחנה
+                    </label>
+                    <select id="rideStation" class="input" required>
+                        <option value="">בחר תחנה... </option>
+                    </select>
+                </div>
+                
+                <!-- Dispatcher Details -->
+                <div id="dispatcherDetailsGroup" class="hidden space-y-4 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
+                    <h4 class="font-semibold text-purple-700 dark:text-purple-300">
+                        <i class="fas fa-user-tie ml-1"></i>
+                        פרטי הסדרן
+                    </h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">שם</label>
+                            <input type="text" id="dispatcherName" class="input" placeholder="שם הסדרן">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">טלפון</label>
+                            <input type="tel" id="dispatcherPhone" class="input" placeholder="050-1234567">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Private Person Details -->
+                <div id="privatePersonGroup" class="hidden space-y-4 p-4 bg-yellow-50 dark: bg-yellow-900/20 rounded-xl">
+                    <h4 class="font-semibold text-yellow-700 dark:text-yellow-300">
+                        <i class="fas fa-user ml-1"></i>
+                        פרטי הלקוח הפרטי
+                    </h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark: text-gray-300 mb-2">שם</label>
+                            <input type="text" id="privateName" class="input" placeholder="שם הלקוח">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">טלפון</label>
+                            <input type="tel" id="privatePhone" class="input" placeholder="050-1234567">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ride Details -->
+                <div class="p-4 bg-blue-50 dark: bg-blue-900/20 rounded-xl space-y-4">
+                    <h4 class="font-semibold text-blue-700 dark:text-blue-300">
+                        <i class="fas fa-route ml-1"></i>
+                        פרטי הנסיעה
+                    </h4>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-map-marker-alt text-green-500 ml-1"></i>
+                                מוצא
+                            </label>
+                            <input type="text" id="rideFrom" class="input" placeholder="כתובת מוצא" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-map-marker-alt text-red-500 ml-1"></i>
+                                יעד
+                            </label>
+                            <input type="text" id="rideTo" class="input" placeholder="כתובת יעד" required>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-calendar text-orange-500 ml-1"></i>
+                                תאריך
+                            </label>
+                            <input type="date" id="rideDate" class="input" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-clock text-blue-500 ml-1"></i>
+                                שעה
+                            </label>
+                            <input type="time" id="rideTime" class="input">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Price and Commission -->
+                <div class="p-4 bg-green-50 dark: bg-green-900/20 rounded-xl space-y-4">
+                    <h4 class="font-semibold text-green-700 dark:text-green-300">
+                        <i class="fas fa-shekel-sign ml-1"></i>
+                        מחיר ועמלה
+                    </h4>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                מחיר הנסיעה
+                            </label>
+                            <input type="number" id="ridePrice" class="input" placeholder="0" step="1" required oninput="calculateCommission()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                עמלה (12%)
+                                <span class="commission-rate">תותים</span>
+                            </label>
+                            <input type="number" id="rideCommission" class="input bg-gray-100" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="customCommission" class="w-4 h-4" onchange="toggleCustomCommission()">
+                            <span>עמלה מותאמת אישית</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Status -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-info-circle text-blue-500 ml-1"></i>
+                        סטטוס תשלום העמלה
+                    </label>
+                    <select id="rideStatus" class="input">
+                        <option value="pending">⏳ ממתין לתשלום</option>
+                        <option value="paid">✅ שולם</option>
+                        <option value="disputed">⚠️ במחלוקת</option>
+                    </select>
+                </div>
+                
+                <!-- Notes -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-comment text-gray-500 ml-1"></i>
+                        הערות (אופציונלי)
+                    </label>
+                    <textarea id="rideNotes" class="input" rows="2" placeholder="הערות נוספות..."></textarea>
+                </div>
+                
+                <!-- Duplicate Warning -->
+                <div id="duplicateWarning" class="hidden p-4 bg-red-50 border-2 border-red-300 rounded-xl">
+                    <div class="flex items-center gap-2 text-red-700 font-semibold mb-2">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>אזהרה:  נסיעה דומה כבר קיימת!</span>
+                    </div>
+                    <p id="duplicateWarningText" class="text-sm text-red-600"></p>
+                </div>
+                
+                <button type="submit" class="btn w-full btn-success">
+                    <i class="fas fa-save"></i>
+                    <span id="rideSubmitText">שמור נסיעה</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Record Payment Modal -->
+    <div id="paymentModal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+        <div class="card max-w-md w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">רשום תשלום עמלה</h3>
+                <button id="closePaymentModal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="paymentForm" class="space-y-4">
+                <input type="hidden" id="paymentRideId" value="">
+                
+                <div class="bg-blue-50 dark: bg-blue-900/20 p-4 rounded-xl mb-4">
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">סכום העמלה: </div>
+                    <div class="text-2xl font-bold text-blue-600" id="pendingCommission">₪0</div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-credit-card text-purple-500 ml-1"></i>
+                        אמצעי תשלום
+                    </label>
+                    <select id="paymentMethod" class="input" required>
+                        <option value="מזומן">💵 מזומן</option>
+                        <option value="ביט">📱 ביט</option>
+                        <option value="פייבוקס">📱 פייבוקס</option>
+                        <option value="העברה">🏦 העברה בנקאית</option>
+                        <option value="קיזוז">➖ קיזוז</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-calendar text-green-500 ml-1"></i>
+                        תאריך תשלום
+                    </label>
+                    <input type="date" id="paymentDate" class="input">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-comment text-gray-500 ml-1"></i>
+                        הערות
+                    </label>
+                    <textarea id="paymentNotes" class="input" rows="2" placeholder="לדוגמה: תשלום שבועי... "></textarea>
+                </div>
+                
+                <button type="submit" class="btn w-full btn-success">
+                    <i class="fas fa-check"></i>
+                    אשר תשלום
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+        <div class="card max-w-sm w-full text-center">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-trash-alt text-red-500 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">מחיקת פריט</h3>
+            <p class="text-gray-500 dark:text-gray-400 mb-6" id="deleteMessage">האם אתה בטוח שברצונך למחוק? </p>
+            <div class="flex gap-3 justify-center">
+                <button id="cancelDeleteBtn" class="btn btn-secondary">ביטול</button>
+                <button id="confirmDeleteBtn" class="btn btn-danger">
+                    <i class="fas fa-trash"></i>
+                    מחק
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed top-4 left-1/2 -translate-x-1/2 z-50"></div>
+
+    <style>
+        .source-type-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            background:  #f9fafb;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .source-type-btn: hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .source-type-btn.active {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            color: #1d4ed8;
+        }
+        
+        .source-type-btn[data-type="dispatcher"]. active {
+            border-color: #8b5cf6;
+            background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+            color: #7c3aed;
+        }
+        
+        .source-type-btn[data-type="private"]. active {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #b45309;
+        }
+    </style>
+
+    <script type="module">
+        // Firebase imports and initialization
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            doc,
+            addDoc, 
+            updateDoc, 
+            deleteDoc,
+            getDocs, 
+            query, 
+            orderBy,
+            serverTimestamp,
+            Timestamp 
+        } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAWOhJ4pSWnzMXOt8reavRWiLWtRS1ivzQ",
+            authDomain: "my-driver-b0d00. firebaseapp.com",
+            projectId: "my-driver-b0d00",
+            storageBucket: "my-driver-b0d00.appspot.com",
+            messagingSenderId:  "752217263540",
+            appId: "1:752217263540:web:2719a734580d03579eb6e1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const appId = "my-driver-b0d00";
+        
+        // Commission rate
+        const COMMISSION_RATE = 0.12; // 12%
+        
+        let userId = null;
+        let stations = [];
+        let rides = [];
+        let currentTab = 'stations';
+        let deleteCallback = null;
+        
+        // Make functions available globally
+        window.editStation = editStation;
+        window.deleteStation = deleteStation;
+        window.openRideModal = openRideModal;
+        window.openPaymentModal = openPaymentModal;
+        window.editRide = editRide;
+        window.deleteRide = deleteRide;
+        window.markAsPaid = markAsPaid;
+        window.switchTab = switchTab;
+        window.filterRides = filterRides;
+        window.selectSourceType = selectSourceType;
+        window. calculateCommission = calculateCommission;
+        window.toggleCustomCommission = toggleCustomCommission;
+        
+        // DOM Elements
+        const stationsGrid = document.getElementById('stationsGrid');
+        const ridesList = document.getElementById('ridesList');
+        const privateRidesList = document.getElementById('privateRidesList');
+        const unpaidRidesList = document.getElementById('unpaidRidesList');
+        const stationModal = document.getElementById('stationModal');
+        const rideModal = document. getElementById('rideModal');
+        const paymentModal = document. getElementById('paymentModal');
+        const deleteModal = document.getElementById('deleteModal');
+        
+        // Helper function to parse date
+        function parseDate(date) {
+            if (!date) return null;
+            if (typeof date. toDate === 'function') {
+                return date.toDate();
+            }
+            return new Date(date);
+        }
+        
+        // Helper function to format date for display
+        function formatDateDisplay(date) {
+            const d = parseDate(date);
+            if (!d) return '';
+            return d.toLocaleDateString('he-IL');
+        }
+        
+        // Helper function to format date for input
+        function formatDateForInput(date) {
+            const d = parseDate(date);
+            if (! d) return '';
+            return d.toISOString().split('T')[0];
+        }
+        
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            const bgColor = type === 'error' ? 'bg-red-500' : type === 'warning' ? 'bg-orange-500' : 'bg-green-500';
+            toast.className = `${bgColor} text-white px-6 py-4 rounded-xl shadow-lg font-semibold mb-2`;
+            toast.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'check-circle'} ml-2"></i>${message}`;
+            document.getElementById('toastContainer').appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast. style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        // Tab switching
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+            
+            document.getElementById('stationsSection').classList.toggle('hidden', tab !== 'stations');
+            document.getElementById('ridesSection').classList.toggle('hidden', tab !== 'rides');
+            document.getElementById('privateSection').classList.toggle('hidden', tab !== 'private');
+            document. getElementById('unpaidSection').classList.toggle('hidden', tab !== 'unpaid');
+            
+            if (tab === 'rides') {
+                renderAllRides();
+            } else if (tab === 'private') {
+                renderPrivateRides();
+            } else if (tab === 'unpaid') {
+                renderUnpaidRides();
+            }
+        }
+        
+        // Select source type
+        function selectSourceType(type) {
+            document.getElementById('rideSourceType').value = type;
+            
+            document.querySelectorAll('.source-type-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === type);
+            });
+            
+            // Show/hide relevant sections
+            document.getElementById('stationSelectGroup').classList.toggle('hidden', type === 'private');
+            document. getElementById('dispatcherDetailsGroup').classList.toggle('hidden', type !== 'dispatcher');
+            document. getElementById('privatePersonGroup').classList.toggle('hidden', type !== 'private');
+            
+            // Update required attribute
+            document.getElementById('rideStation').required = type !== 'private';
+        }
+        
+        // Calculate commission
+        function calculateCommission() {
+            const price = parseFloat(document.getElementById('ridePrice').value) || 0;
+            const commissionField = document.getElementById('rideCommission');
+            const customCheckbox = document.getElementById('customCommission');
+            
+            if (!customCheckbox.checked) {
+                const commission = Math.round(price * COMMISSION_RATE);
+                commissionField.value = commission;
+            }
+        }
+        
+        // Toggle custom commission
+        function toggleCustomCommission() {
+            const commissionField = document. getElementById('rideCommission');
+            const customCheckbox = document.getElementById('customCommission');
+            
+            if (customCheckbox.checked) {
+                commissionField.readOnly = false;
+                commissionField. classList.remove('bg-gray-100');
+            } else {
+                commissionField.readOnly = true;
+                commissionField. classList.add('bg-gray-100');
+                calculateCommission();
+            }
+        }
+        
+        // Check for duplicate ride
+        function checkDuplicate(from, to, date, time, excludeId = null) {
+            const dateStr = formatDateForInput(date);
+            
+            return rides.find(ride => {
+                if (excludeId && ride.id === excludeId) return false;
+                
+                const rideDate = formatDateForInput(ride.rideDate);
+                const sameRoute = ride.from?. toLowerCase() === from?.toLowerCase() && 
+                                  ride.to?.toLowerCase() === to?.toLowerCase();
+                const sameDate = rideDate === dateStr;
+                const sameTime = time && ride.time === time;
+                
+                // Consider duplicate if same route on same date (and same time if provided)
+                return sameRoute && sameDate && (time ?  sameTime : true);
+            });
+        }
+        
+        // Auth state
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                await loadData();
+                setupEventListeners();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+        
+        // Load all data
+async function loadData() {
+    await loadStations();
+    await migrateOldCharges(); // הוסף שורה זו! 
+    await loadRides();
+    updateSummary();
+    detectDuplicates();
+}
+        
+        // Load stations
+        async function loadStations() {
+            try {
+                const stationsRef = collection(db, `artifacts/${appId}/users/${userId}/stations`);
+                const q = query(stationsRef, orderBy('createdAt', 'desc'));
+                const snapshot = await getDocs(q);
+                
+                stations = snapshot.docs.map(doc => ({
+                    id: doc. id,
+                    ...doc.data()
+                }));
+                
+                renderStations();
+                updateStationDropdowns();
+            } catch (error) {
+                console.error('Error loading stations:', error);
+                showToast('שגיאה בטעינת תחנות', 'error');
+            }
+        }
+        
+        // Load rides
+        async function loadRides() {
+            try {
+                const ridesRef = collection(db, `artifacts/${appId}/users/${userId}/rides`);
+                const q = query(ridesRef, orderBy('rideDate', 'desc'));
+                const snapshot = await getDocs(q);
+                
+                rides = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ... doc.data()
+                }));
+                
+                renderStations(); // Re-render stations with updated ride data
+                
+                if (currentTab === 'rides') {
+                    renderAllRides();
+                } else if (currentTab === 'private') {
+                    renderPrivateRides();
+                } else if (currentTab === 'unpaid') {
+                    renderUnpaidRides();
+                }
+            } catch (error) {
+                console. error('Error loading rides:', error);
+                showToast('שגיאה בטעינת נסיעות', 'error');
+            }
+        }
+		
+		// Migrate old charges to rides format
+async function migrateOldCharges() {
+    try {
+        // Check if migration already done
+        const migrationFlag = localStorage.getItem(`migration_done_${userId}`);
+        if (migrationFlag) return;
+        
+        // Load old charges
+        const chargesRef = collection(db, `artifacts/${appId}/users/${userId}/stationCharges`);
+        const snapshot = await getDocs(chargesRef);
+        
+        if (snapshot.empty) {
+            localStorage.setItem(`migration_done_${userId}`, 'true');
+            return;
+        }
+        
+        console.log(`Found ${snapshot.docs.length} old charges to migrate... `);
+        
+        for (const docSnap of snapshot.docs) {
+            const oldData = docSnap. data();
+            
+            // Create new ride from old charge
+            const newRide = {
+                // Use existing fields or defaults
+                from: oldData.from || 'לא צוין',
+                to:  oldData.to || 'לא צוין',
+                price: oldData.amount || oldData.price || 0,
+                commission: oldData.commission || Math.round((oldData.amount || oldData.price || 0) * 0.12),
+                rideDate: oldData.chargeDate || oldData.rideDate || serverTimestamp(),
+                time: oldData.time || null,
+                status:  oldData.status || 'pending',
+                notes:  oldData.notes || '',
+                stationId: oldData.stationId || null,
+                sourceType: oldData.isPrivate ? 'private' : (oldData.chargeType || 'bot'),
+                privateName: oldData.privateName || null,
+                privatePhone: oldData.privatePhone || null,
+                dispatcherName: oldData. dispatcherName || null,
+                dispatcherPhone: oldData.dispatcherPhone || null,
+                createdAt: oldData.createdAt || serverTimestamp(),
+                updatedAt:  serverTimestamp(),
+                migratedFrom: docSnap.id // Keep reference to old doc
+            };
+            
+            // Add to new rides collection
+            await addDoc(collection(db, `artifacts/${appId}/users/${userId}/rides`), newRide);
+        }
+        
+        // Mark migration as done
+        localStorage.setItem(`migration_done_${userId}`, 'true');
+        showToast(`הועברו ${snapshot.docs.length} רשומות ישנות בהצלחה`, 'success');
+        console.log('Migration completed! ');
+        
+    } catch (error) {
+        console. error('Migration error:', error);
+    }
+}
+        
+        // Update station dropdowns
+        function updateStationDropdowns() {
+            const dropdown = document.getElementById('rideStation');
+            const filterDropdown = document. getElementById('filterStation');
+            
+            const options = '<option value="">בחר תחנה... </option>' +
+                stations.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            
+            dropdown.innerHTML = options;
+            
+            if (filterDropdown) {
+                filterDropdown. innerHTML = '<option value="all">כל התחנות</option>' +
+                    stations.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            }
+        }
+        
+        // Render stations grid
+        function renderStations() {
+            if (stations.length === 0) {
+                stationsGrid.innerHTML = `
+                    <div class="card text-center py-12 text-gray-400 col-span-full">
+                        <i class="fas fa-store text-6xl mb-4 opacity-50"></i>
+                        <p class="text-lg">עדיין לא הוספת תחנות</p>
+                        <p class="text-sm mt-2">לחץ על "הוסף תחנה" כדי להתחיל</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            stationsGrid.innerHTML = stations.map(station => {
+                const stationRides = rides.filter(r => r.stationId === station. id);
+                const totalRidesAmount = stationRides.reduce((sum, r) => sum + (parseFloat(r.price) || 0), 0);
+                const totalCommission = stationRides.reduce((sum, r) => sum + (parseFloat(r.commission) || 0), 0);
+                const paidCommission = stationRides.filter(r => r. status === 'paid').reduce((sum, r) => sum + (parseFloat(r. commission) || 0), 0);
+                const pendingCommission = totalCommission - paidCommission;
+                const pendingCount = stationRides.filter(r => r.status !== 'paid').length;
+                
+                return `
+                    <div class="card station-card">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100">${station.name}</h3>
+                                <span class="text-sm text-gray-500">${stationRides.length} נסיעות</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="editStation('${station.id}')" class="action-btn text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/30">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteStation('${station. id}')" class="action-btn text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2 mb-4">
+                            <div class="text-center p-2 bg-gray-50 dark: bg-gray-800 rounded-lg">
+                                <div class="text-lg font-bold text-gray-700 dark:text-gray-300">₪${totalRidesAmount. toFixed(0)}</div>
+                                <div class="text-xs text-gray-500">סה"כ נסיעות</div>
+                            </div>
+                            <div class="text-center p-2 bg-orange-50 dark: bg-orange-900/20 rounded-lg">
+                                <div class="text-lg font-bold text-orange-600">₪${totalCommission.toFixed(0)}</div>
+                                <div class="text-xs text-gray-500">עמלות (12%)</div>
+                            </div>
+                            <div class="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                <div class="text-lg font-bold text-green-600">₪${paidCommission.toFixed(0)}</div>
+                                <div class="text-xs text-gray-500">שולם</div>
+                            </div>
+                            <div class="text-center p-2 ${pendingCommission > 0 ? 'bg-red-50 dark: bg-red-900/20' : 'bg-gray-50 dark: bg-gray-800'} rounded-lg">
+                                <div class="text-lg font-bold ${pendingCommission > 0 ? 'text-red-600' : 'text-gray-600'}">₪${pendingCommission.toFixed(0)}</div>
+                                <div class="text-xs text-gray-500">יתרה (${pendingCount})</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button onclick="openRideModal('${station.id}')" class="btn btn-success flex-1 text-sm py-2">
+                                <i class="fas fa-plus"></i>
+                                הוסף נסיעה
+                            </button>
+                        </div>
+                        
+                        ${stationRides. length > 0 ? `
+                            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">נסיעות אחרונות: </h4>
+                                <div class="space-y-2 max-h-48 overflow-y-auto">
+                                    ${stationRides.slice(0, 5).map(ride => renderRideItem(ride, true)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Render single ride item
+        function renderRideItem(ride, compact = false) {
+            const station = stations.find(s => s.id === ride.stationId);
+            const date = formatDateDisplay(ride.rideDate);
+            const statusClass = ride.status === 'paid' ? 'status-paid' : ride.status === 'disputed' ? 'status-disputed' : 'status-pending';
+            const statusText = ride. status === 'paid' ? 'שולם' : ride.status === 'disputed' ? 'במחלוקת' : 'ממתין';
+            const sourceIcon = ride.sourceType === 'private' ? '👤' : ride.sourceType === 'bot' ? '🤖' : '👔';
+            const borderClass = ride.status === 'paid' ?  'paid' : ride.status === 'disputed' ? 'disputed' : '';
+            
+            if (compact) {
+                return `
+                    <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg charge-item text-sm ride-card ${borderClass}">
+                        <div class="flex items-center gap-2 flex-1 min-w-0">
+                            <span class="text-lg shrink-0">${sourceIcon}</span>
+                            <div class="min-w-0">
+                                <div class="ride-route truncate">
+                                    <span class="font-medium">${ride.from || 'לא צוין'}</span>
+<span class="arrow mx-2">→</span>
+<i class="fas fa-map-marker-alt to"></i>
+<span class="font-medium">${ride.to || 'לא צוין'}</span>
+                                </div>
+                                <div class="text-xs text-gray-500">${date} ${ride.time || ''}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <div class="text-left">
+                                <div class="font-bold text-sm">₪${(parseFloat(ride.price) || 0).toFixed(0)}</div>
+                                <div class="text-xs text-orange-600">₪${(parseFloat(ride.commission) || 0).toFixed(0)}</div>
+                            </div>
+                            <span class="status-badge ${statusClass} text-xs">${statusText}</span>
+                            <div class="flex gap-1">
+                                ${ride.status !== 'paid' ?  `
+                                    <button onclick="markAsPaid('${ride.id}')" class="action-btn text-green-500 hover: bg-green-100 text-xs p-1" title="סמן כשולם">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                ` : ''}
+                                <button onclick="editRide('${ride.id}')" class="action-btn text-blue-500 hover:bg-blue-100 text-xs p-1" title="ערוך">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteRide('${ride. id}')" class="action-btn text-red-500 hover:bg-red-100 text-xs p-1" title="מחק">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            return `
+                <div class="card charge-item ride-card ${borderClass} ${ride.isDuplicate ? 'border-2 border-red-400' : ''}">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 ${ride.sourceType === 'private' ? 'bg-yellow-100 dark:bg-yellow-900' : ride.sourceType === 'dispatcher' ? 'bg-purple-100 dark: bg-purple-900' : 'bg-blue-100 dark: bg-blue-900'} rounded-xl flex items-center justify-center text-2xl shrink-0">
+							${sourceIcon}
+                            </div>
+                            <div class="min-w-0">
+                                <div class="font-bold text-gray-800 dark: text-gray-100 mb-1">
+                                    ${ride.sourceType === 'private' ? (ride.privateName || 'לקוח פרטי') : (station?. name || 'תחנה לא ידועה')}
+                                    ${ride.sourceType === 'dispatcher' && ride.dispatcherName ? `<span class="text-sm font-normal text-purple-600"> (${ride.dispatcherName})</span>` : ''}
+                                </div>
+                                <div class="ride-route text-base mb-1">
+                                    <i class="fas fa-map-marker-alt from"></i>
+                                    <span class="font-medium">${ride.from || '? '}</span>
+                                    <span class="arrow mx-2">→</span>
+                                    <i class="fas fa-map-marker-alt to"></i>
+                                    <span class="font-medium">${ride. to || '?'}</span>
+                                </div>
+                                <div class="text-sm text-gray-500 flex items-center gap-3 flex-wrap">
+                                    <span><i class="far fa-calendar-alt ml-1"></i>${date}</span>
+                                    ${ride.time ? `<span><i class="far fa-clock ml-1"></i>${ride. time}</span>` : ''}
+                                    ${ride.sourceType === 'private' && ride.privatePhone ? `<span><i class="fas fa-phone ml-1"></i>${ride.privatePhone}</span>` : ''}
+                                </div>
+                                ${ride.notes ?  `<div class="text-xs text-gray-400 mt-1"><i class="fas fa-comment ml-1"></i>${ride.notes}</div>` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-4">
+                            <div class="text-left">
+                                <div class="text-xl font-bold text-gray-800 dark:text-gray-100">₪${(parseFloat(ride.price) || 0).toFixed(0)}</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="commission-badge">₪${(parseFloat(ride.commission) || 0).toFixed(0)}</span>
+                                    <span class="status-badge ${statusClass}">${statusText}</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                ${ride.status !== 'paid' ?  `
+                                    <button onclick="openPaymentModal('${ride.id}', ${ride.commission})" class="action-btn text-green-500 hover: bg-green-100 dark:hover:bg-green-900/30" title="רשום תשלום">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                ` : ''}
+                                <button onclick="editRide('${ride.id}')" class="action-btn text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/30" title="ערוך">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteRide('${ride.id}')" class="action-btn text-red-500 hover: bg-red-100 dark:hover: bg-red-900/30" title="מחק">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Render all rides
+        function renderAllRides() {
+            const filterStatus = document.getElementById('filterStatus')?.value || 'all';
+            const filterType = document.getElementById('filterType')?.value || 'all';
+            const filterStation = document.getElementById('filterStation')?.value || 'all';
+            const searchText = document.getElementById('searchRides')?.value?.toLowerCase() || '';
+            
+            let filteredRides = [... rides];
+            
+            if (filterStatus !== 'all') {
+                filteredRides = filteredRides.filter(r => r.status === filterStatus);
+            }
+            
+            if (filterType !== 'all') {
+                filteredRides = filteredRides.filter(r => r.sourceType === filterType);
+            }
+            
+            if (filterStation !== 'all') {
+                filteredRides = filteredRides.filter(r => r. stationId === filterStation);
+            }
+            
+            if (searchText) {
+                filteredRides = filteredRides.filter(r => 
+                    (r.from?. toLowerCase().includes(searchText)) ||
+                    (r.to?.toLowerCase().includes(searchText)) ||
+                    (r.privateName?.toLowerCase().includes(searchText)) ||
+                    (r.dispatcherName?.toLowerCase().includes(searchText))
+                );
+            }
+            
+            if (filteredRides.length === 0) {
+                ridesList.innerHTML = `
+                    <div class="text-center py-8 text-gray-400">
+                        <i class="fas fa-car text-4xl mb-4 opacity-50"></i>
+                        <p>אין נסיעות להצגה</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            ridesList.innerHTML = filteredRides.map(ride => renderRideItem(ride)).join('');
+        }
+        
+        // Render private rides
+        function renderPrivateRides() {
+            const privateOnly = rides.filter(r => r.sourceType === 'private');
+            
+            if (privateOnly.length === 0) {
+                privateRidesList.innerHTML = `
+                    <div class="card text-center py-12 text-gray-400">
+                        <i class="fas fa-user-plus text-6xl mb-4 opacity-50"></i>
+                        <p class="text-lg">אין נסיעות פרטיות</p>
+                        <p class="text-sm mt-2">לחץ על "הוסף נסיעה" כדי להוסיף</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            privateRidesList.innerHTML = privateOnly.map(ride => renderRideItem(ride)).join('');
+        }
+        
+        // Render unpaid rides
+        function renderUnpaidRides() {
+            const unpaidOnly = rides.filter(r => r.status === 'pending');
+            
+            if (unpaidOnly.length === 0) {
+                unpaidRidesList. innerHTML = `
+                    <div class="text-center py-8 text-gray-400">
+                        <i class="fas fa-check-circle text-4xl mb-4 opacity-50 text-green-500"></i>
+                        <p class="text-lg">כל העמלות שולמו!  🎉</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Group by station/private
+            const grouped = {};
+            unpaidOnly.forEach(ride => {
+                const key = ride.sourceType === 'private' ? 'private' : ride.stationId;
+                if (!grouped[key]) {
+                    grouped[key] = {
+                        rides: [],
+                        total: 0,
+                        name: ride.sourceType === 'private' ? 'לקוחות פרטיים' : stations.find(s => s.id === ride.stationId)?.name || 'תחנה לא ידועה'
+                    };
+                }
+                grouped[key].rides.push(ride);
+                grouped[key].total += parseFloat(ride.commission) || 0;
+            });
+            
+            unpaidRidesList. innerHTML = Object.entries(grouped).map(([key, data]) => `
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-lg text-gray-800 dark:text-gray-100">${data.name}</h3>
+                        <span class="text-lg font-bold text-red-600">יתרה: ₪${data. total.toFixed(0)}</span>
+                    </div>
+                    <div class="space-y-2">
+                        ${data.rides.map(ride => renderRideItem(ride, true)).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Filter rides
+        function filterRides() {
+            renderAllRides();
+        }
+        
+        // Update summary
+        function updateSummary() {
+            const totalRidesCount = rides.length;
+            const totalRidesAmount = rides.reduce((sum, r) => sum + (parseFloat(r.price) || 0), 0);
+            const totalCommission = rides.reduce((sum, r) => sum + (parseFloat(r.commission) || 0), 0);
+            const paidCommission = rides.filter(r => r. status === 'paid').reduce((sum, r) => sum + (parseFloat(r.commission) || 0), 0);
+            const pendingCommission = rides.filter(r => r.status === 'pending').reduce((sum, r) => sum + (parseFloat(r.commission) || 0), 0);
+            
+            document.getElementById('totalRides').textContent = totalRidesCount;
+            document.getElementById('totalRidesAmount').textContent = `₪${totalRidesAmount.toFixed(0)}`;
+            document.getElementById('totalCommission').textContent = `₪${totalCommission.toFixed(0)}`;
+            document.getElementById('totalPaid').textContent = `₪${paidCommission.toFixed(0)}`;
+            document.getElementById('totalPending').textContent = `₪${pendingCommission.toFixed(0)}`;
+        }
+        
+        // Detect duplicates
+        function detectDuplicates() {
+            const duplicates = [];
+            const seen = new Map();
+            
+            // Reset duplicate flags
+            rides.forEach(r => r.isDuplicate = false);
+            
+            for (const ride of rides) {
+                const dateStr = formatDateForInput(ride.rideDate);
+                // Create a key based on route, date, and optionally time
+                const fromKey = (ride.from || 'unknown').toLowerCase();
+const toKey = (ride.to || 'unknown').toLowerCase();
+const key = `${fromKey}-${toKey}-${dateStr}${ride.time ? '-' + ride.time : ''}`;
+                
+                if (seen.has(key)) {
+                    const original = seen.get(key);
+                    original.isDuplicate = true;
+                    ride.isDuplicate = true;
+                    duplicates.push({ ride1: original, ride2: ride });
+                } else {
+                    seen.set(key, ride);
+                }
+            }
+            
+            document.getElementById('duplicatesCount').textContent = duplicates.length;
+            
+            if (duplicates.length > 0) {
+                document.getElementById('duplicateAlerts').classList.remove('hidden');
+                document.getElementById('duplicatesList').innerHTML = duplicates.map(d => {
+                    const station = stations.find(s => s.id === d.ride1.stationId);
+                    return `
+                        <div class="p-3 bg-white dark:bg-gray-800 rounded-lg flex justify-between items-center">
+                            <div>
+                                <div class="font-semibold">${d.ride1.from} → ${d.ride1.to}</div>
+                                <div class="text-sm text-gray-500">${formatDateDisplay(d.ride1.rideDate)} | ₪${d. ride1.price}</div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="editRide('${d.ride1.id}')" class="btn btn-secondary text-xs py-1 px-3">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteRide('${d.ride2.id}')" class="btn btn-danger text-xs py-1 px-3">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                document.getElementById('duplicateAlerts').classList.add('hidden');
+            }
+        }
+        
+        // Open ride modal
+        function openRideModal(stationId = null) {
+            document.getElementById('rideForm').reset();
+            document. getElementById('rideId').value = '';
+            document.getElementById('rideDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('rideStatus').value = 'pending';
+            document.getElementById('rideSubmitText').textContent = 'שמור נסיעה';
+            document.getElementById('rideModalTitle').textContent = 'הוסף נסיעה חדשה';
+            document.getElementById('duplicateWarning').classList.add('hidden');
+            document.getElementById('customCommission').checked = false;
+            document.getElementById('rideCommission').readOnly = true;
+            document.getElementById('rideCommission').classList.add('bg-gray-100');
+            
+            // Reset source type
+            selectSourceType('bot');
+            
+            if (stationId) {
+                document.getElementById('rideStation').value = stationId;
+            }
+            
+            rideModal.classList.remove('hidden');
+        }
+        
+        // Edit station
+        function editStation(stationId) {
+            const station = stations.find(s => s.id === stationId);
+            if (!station) return;
+            
+            document.getElementById('stationId').value = station.id;
+            document.getElementById('stationName').value = station.name;
+            document.getElementById('stationModalTitle').textContent = 'ערוך תחנה';
+            stationModal.classList. remove('hidden');
+        }
+        
+        // Delete station
+        function deleteStation(stationId) {
+            const station = stations.find(s => s. id === stationId);
+            const stationRides = rides.filter(r => r. stationId === stationId);
+            
+            document.getElementById('deleteMessage').textContent = 
+                `האם אתה בטוח שברצונך למחוק את "${station?.name}"? ${stationRides. length > 0 ? `יש ${stationRides. length} נסיעות משויכות לתחנה זו. ` : ''}`;
+            
+            deleteCallback = async () => {
+                try {
+                    await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/stations`, stationId));
+                    showToast('התחנה נמחקה בהצלחה');
+                    await loadData();
+                } catch (error) {
+                    console. error('Error deleting station:', error);
+                    showToast('שגיאה במחיקת התחנה', 'error');
+                }
+            };
+            
+            deleteModal.classList.remove('hidden');
+        }
+        
+        // Edit ride
+        function editRide(rideId) {
+            const ride = rides. find(r => r.id === rideId);
+            if (!ride) return;
+
+            document.getElementById('rideId').value = ride.id;
+            document.getElementById('rideFrom').value = ride.from || '';
+            document.getElementById('rideTo').value = ride.to || '';
+            document.getElementById('ridePrice').value = ride.price || '';
+            document.getElementById('rideCommission').value = ride.commission || '';
+            document. getElementById('rideStatus').value = ride.status || 'pending';
+            document. getElementById('rideNotes').value = ride.notes || '';
+            document.getElementById('rideTime').value = ride.time || '';
+            document.getElementById('rideSubmitText').textContent = 'עדכן נסיעה';
+            document.getElementById('rideModalTitle').textContent = 'ערוך נסיעה';
+            document.getElementById('duplicateWarning').classList.add('hidden');
+
+            // Handle date
+            document.getElementById('rideDate').value = formatDateForInput(ride.rideDate);
+
+            // Set source type
+            selectSourceType(ride. sourceType || 'bot');
+
+            if (ride.sourceType === 'private') {
+                document.getElementById('privateName').value = ride.privateName || '';
+                document.getElementById('privatePhone').value = ride.privatePhone || '';
+            } else {
+                document.getElementById('rideStation').value = ride.stationId || '';
+                if (ride.sourceType === 'dispatcher') {
+                    document.getElementById('dispatcherName').value = ride.dispatcherName || '';
+                    document.getElementById('dispatcherPhone').value = ride.dispatcherPhone || '';
+                }
+            }
+
+            // Check if custom commission was used
+            const expectedCommission = Math.round((parseFloat(ride.price) || 0) * COMMISSION_RATE);
+            if (parseFloat(ride.commission) !== expectedCommission) {
+                document.getElementById('customCommission').checked = true;
+                document. getElementById('rideCommission').readOnly = false;
+                document.getElementById('rideCommission').classList.remove('bg-gray-100');
+            }
+
+            rideModal.classList.remove('hidden');
+        }
+        
+        // Delete ride
+        function deleteRide(rideId) {
+            const ride = rides.find(r => r.id === rideId);
+            document.getElementById('deleteMessage').textContent = 
+                `האם אתה בטוח שברצונך למחוק את הנסיעה מ-${ride?. from || '?'} ל-${ride?. to || '?'}? `;
+            
+            deleteCallback = async () => {
+                try {
+                    await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/rides`, rideId));
+                    showToast('הנסיעה נמחקה בהצלחה');
+                    await loadData();
+                } catch (error) {
+                    console.error('Error deleting ride:', error);
+                    showToast('שגיאה במחיקת הנסיעה', 'error');
+                }
+            };
+            
+            deleteModal.classList. remove('hidden');
+        }
+        
+        // Mark as paid (quick action)
+        async function markAsPaid(rideId) {
+            try {
+                await updateDoc(doc(db, `artifacts/${appId}/users/${userId}/rides`, rideId), {
+                    status: 'paid',
+                    paymentDate: new Date().toISOString().split('T')[0],
+                    updatedAt: serverTimestamp()
+                });
+                showToast('הנסיעה סומנה כשולמה');
+                await loadData();
+            } catch (error) {
+                console. error('Error marking as paid:', error);
+                showToast('שגיאה בעדכון הנסיעה', 'error');
+            }
+        }
+        
+        // Open payment modal
+        function openPaymentModal(rideId, commission) {
+            document.getElementById('paymentForm').reset();
+            document.getElementById('paymentRideId').value = rideId;
+            document.getElementById('pendingCommission').textContent = `₪${parseFloat(commission).toLocaleString()}`;
+            document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
+            paymentModal.classList. remove('hidden');
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Add Station Button
+            document.getElementById('addStationBtn').addEventListener('click', () => {
+                document.getElementById('stationForm').reset();
+                document.getElementById('stationId').value = '';
+                document.getElementById('stationModalTitle').textContent = 'הוסף תחנה חדשה';
+                stationModal. classList.remove('hidden');
+            });
+
+            // Add Ride Button
+            document. getElementById('addRideBtn').addEventListener('click', () => {
+                openRideModal();
+            });
+
+            // Close modals
+            document. getElementById('closeStationModal').addEventListener('click', () => {
+                stationModal.classList.add('hidden');
+            });
+
+            document.getElementById('closeRideModal').addEventListener('click', () => {
+                rideModal.classList. add('hidden');
+            });
+
+            document.getElementById('closePaymentModal').addEventListener('click', () => {
+                paymentModal.classList.add('hidden');
+            });
+
+            document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+                deleteModal.classList. add('hidden');
+            });
+
+            document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+                if (deleteCallback) {
+                    await deleteCallback();
+                }
+                deleteModal.classList. add('hidden');
+				// Clean old data button
+document.getElementById('cleanOldDataBtn')?.addEventListener('click', async () => {
+    if (! confirm('האם אתה בטוח?  פעולה זו תמחק את כל הנתונים הישנים מ-stationCharges')) return;
+    
+    try {
+        const chargesRef = collection(db, `artifacts/${appId}/users/${userId}/stationCharges`);
+        const snapshot = await getDocs(chargesRef);
+        
+        for (const docSnap of snapshot.docs) {
+            await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/stationCharges`, docSnap.id));
+        }
+        
+        showToast(`נמחקו ${snapshot.docs.length} רשומות ישנות`, 'success');
+    } catch (error) {
+        console. error('Error cleaning old data:', error);
+        showToast('שגיאה במחיקת נתונים ישנים', 'error');
+    }
+});
+            });
+
+            // Station Form Submit
+            document.getElementById('stationForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('stationName').value. trim();
+                const id = document.getElementById('stationId').value;
+
+                if (!name) {
+                    showToast('נא להזין שם תחנה', 'error');
+                    return;
+                }
+
+                try {
+                    if (id) {
+                        await updateDoc(doc(db, `artifacts/${appId}/users/${userId}/stations`, id), {
+                            name,
+                            updatedAt: serverTimestamp()
+                        });
+                        showToast('התחנה עודכנה בהצלחה');
+                    } else {
+                        await addDoc(collection(db, `artifacts/${appId}/users/${userId}/stations`), {
+                            name,
+                            createdAt: serverTimestamp()
+                        });
+                        showToast('התחנה נוספה בהצלחה');
+                    }
+                    stationModal.classList. add('hidden');
+                    await loadData();
+                } catch (error) {
+                    console.error('Error saving station:', error);
+                    showToast('שגיאה בשמירת התחנה', 'error');
+                }
+            });
+
+            // Ride Form - Check duplicates on input
+            ['rideFrom', 'rideTo', 'rideDate', 'rideTime'].forEach(fieldId => {
+                document.getElementById(fieldId)?.addEventListener('input', () => {
+                    const from = document.getElementById('rideFrom').value.trim();
+                    const to = document.getElementById('rideTo').value.trim();
+                    const date = document.getElementById('rideDate').value;
+                    const time = document.getElementById('rideTime').value;
+                    const editId = document.getElementById('rideId').value;
+                    
+                    if (from && to && date) {
+                        const duplicate = checkDuplicate(from, to, date, time, editId);
+                        const warningDiv = document.getElementById('duplicateWarning');
+                        const warningText = document.getElementById('duplicateWarningText');
+                        
+                        if (duplicate) {
+                            const station = stations.find(s => s.id === duplicate.stationId);
+                            warningText.textContent = `נסיעה דומה נמצאה:  ${formatDateDisplay(duplicate. rideDate)} ${duplicate.time || ''} - ${station?.name || duplicate.privateName || 'לקוח פרטי'} - ₪${duplicate. price}`;
+                            warningDiv. classList.remove('hidden');
+                        } else {
+                            warningDiv.classList.add('hidden');
+                        }
+                    }
+                });
+            });
+
+            // Ride Form Submit
+            document.getElementById('rideForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const id = document.getElementById('rideId').value;
+                const sourceType = document.getElementById('rideSourceType').value;
+                const from = document.getElementById('rideFrom').value.trim();
+                const to = document. getElementById('rideTo').value.trim();
+                const rideDate = document.getElementById('rideDate').value;
+                const time = document.getElementById('rideTime').value;
+                const price = parseFloat(document.getElementById('ridePrice').value);
+                const commission = parseFloat(document.getElementById('rideCommission').value);
+                const status = document.getElementById('rideStatus').value;
+                const notes = document.getElementById('rideNotes').value. trim();
+
+                if (!from || !to) {
+                    showToast('נא להזין מוצא ויעד', 'error');
+                    return;
+                }
+
+                if (! price || price <= 0) {
+                    showToast('נא להזין מחיר תקין', 'error');
+                    return;
+                }
+
+                if (! rideDate) {
+                    showToast('נא לבחור תאריך', 'error');
+                    return;
+                }
+
+                const rideData = {
+                    sourceType,
+                    from,
+                    to,
+                    rideDate:  Timestamp.fromDate(new Date(rideDate)),
+                    time:  time || null,
+                    price,
+                    commission:  commission || Math.round(price * COMMISSION_RATE),
+                    status,
+                    notes,
+                    updatedAt: serverTimestamp()
+                };
+
+                if (sourceType === 'private') {
+                    rideData.privateName = document.getElementById('privateName').value.trim();
+                    rideData.privatePhone = document.getElementById('privatePhone').value.trim();
+                    rideData.stationId = null;
+                    rideData.dispatcherName = null;
+                    rideData.dispatcherPhone = null;
+                } else {
+                    const stationId = document.getElementById('rideStation').value;
+                    if (! stationId) {
+                        showToast('נא לבחור תחנה', 'error');
+                        return;
+                    }
+                    rideData.stationId = stationId;
+                    rideData.privateName = null;
+                    rideData.privatePhone = null;
+                    
+                    if (sourceType === 'dispatcher') {
+                        rideData.dispatcherName = document.getElementById('dispatcherName').value.trim();
+                        rideData.dispatcherPhone = document.getElementById('dispatcherPhone').value.trim();
+                    } else {
+                        rideData.dispatcherName = null;
+                        rideData.dispatcherPhone = null;
+                    }
+                }
+
+                try {
+                    if (id) {
+                        await updateDoc(doc(db, `artifacts/${appId}/users/${userId}/rides`, id), rideData);
+                        showToast('הנסיעה עודכנה בהצלחה');
+                    } else {
+                        rideData.createdAt = serverTimestamp();
+                        await addDoc(collection(db, `artifacts/${appId}/users/${userId}/rides`), rideData);
+                        showToast('הנסיעה נוספה בהצלחה');
+                    }
+                    rideModal. classList.add('hidden');
+                    await loadData();
+                } catch (error) {
+                    console.error('Error saving ride:', error);
+                    showToast('שגיאה בשמירת הנסיעה', 'error');
+                }
+            });
+
+            // Payment Form Submit
+            document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const rideId = document. getElementById('paymentRideId').value;
+                const paymentMethod = document. getElementById('paymentMethod').value;
+                const paymentDate = document.getElementById('paymentDate').value;
+                const paymentNotes = document.getElementById('paymentNotes').value.trim();
+
+                try {
+                    await updateDoc(doc(db, `artifacts/${appId}/users/${userId}/rides`, rideId), {
+                        status: 'paid',
+                        paymentMethod,
+                        paymentDate,
+                        paymentNotes,
+                        updatedAt: serverTimestamp()
+                    });
+                    showToast('התשלום נרשם בהצלחה');
+                    paymentModal.classList. add('hidden');
+                    await loadData();
+                } catch (error) {
+                    console.error('Error recording payment:', error);
+                    showToast('שגיאה ברישום התשלום', 'error');
+                }
+            });
+
+            // Close modals on backdrop click
+            [stationModal, rideModal, paymentModal, deleteModal].forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>                                

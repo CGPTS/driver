@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ברוך הבא - יומן הדרייבר</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            background: linear-gradient(135deg, #0f0f23 0%, #1e1e3f 30%, #2d1b69 70%, #ff006e 100%);
+            position: relative;
+            backdrop-filter: blur(1px); /* Depth effect */
+        }
+
+        /* Enhanced Background Animation with Particles */
+        .bg-animation {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            animation: float 25s infinite linear;
+            will-change: transform, opacity; /* Performance boost */
+        }
+
+        .circle:nth-child(1) {
+            width: 250px;
+            height: 250px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .circle:nth-child(2) {
+            width: 180px;
+            height: 180px;
+            top: 60%;
+            left: 75%;
+            animation-delay: 5s;
+        }
+
+        .circle:nth-child(3) {
+            width: 120px;
+            height: 120px;
+            top: 40%;
+            left: 50%;
+            animation-delay: 10s;
+        }
+
+        /* New: Floating Particles */
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            animation: particleFloat 15s infinite ease-in-out;
+        }
+
+        @keyframes particleFloat {
+            0%, 100% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateY(-100px) translateX(50px) scale(1.5);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 0.2;
+            }
+            50% {
+                transform: translateY(-60px) translateX(40px) rotate(180deg);
+                opacity: 0.5;
+            }
+        }
+
+        /* Main Container */
+        .welcome-container {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        /* Enhanced Car Container */
+        .car-container {
+            position: relative;
+            width: 450px;
+            height: 280px;
+            margin-bottom: 60px;
+            animation: slideInCar 2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .car-container:hover {
+            transform: scale(1.05) translateX(10px);
+        }
+
+        @keyframes slideInCar {
+            0% {
+                transform: translateX(-150vw) scale(0.3) rotate(-10deg);
+                opacity: 0;
+            }
+            60% {
+                transform: translateX(30px) scale(1.1) rotate(5deg);
+            }
+            100% {
+                transform: translateX(0) scale(1) rotate(0deg);
+                opacity: 1;
+                animation: bounce 0.5s ease;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Modern Car SVG with more details */
+        .car-svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 20px 50px rgba(0, 0, 0, 0.5)) blur(0.5px);
+        }
+
+        /* Wheels Animation REMOVED - Wheels are now static */
+
+        /* Enhanced Text Animation */
+        .welcome-text {
+            text-align: center;
+            animation: fadeInUp 1.5s ease-out 0.5s backwards;
+        }
+
+        .welcome-text h1 {
+            font-size: 58px;
+            font-weight: 900;
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, #ffffff 0%, #60a5fa 30%, #ff006e 70%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 4s ease-in-out infinite, pulse 2s ease-in-out infinite;
+            transition: transform 0.3s ease;
+        }
+
+        .welcome-text h1:hover {
+            transform: scale(1.1);
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                filter: drop-shadow(0 0 15px rgba(96, 165, 250, 0.4)) drop-shadow(0 0 30px rgba(255, 0, 110, 0.3));
+            }
+            50% {
+                filter: drop-shadow(0 0 25px rgba(96, 165, 250, 0.7)) drop-shadow(0 0 50px rgba(255, 0, 110, 0.6));
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        .welcome-text p {
+            font-size: 28px;
+            font-weight: 400;
+            color: #e0f2fe;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .user-name {
+            font-size: 34px;
+            font-weight: 700;
+            color: #60a5fa;
+            text-shadow: 0 3px 20px rgba(96, 165, 250, 0.6);
+            animation: textGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes textGlow {
+            0%, 100% {
+                text-shadow: 0 3px 20px rgba(96, 165, 250, 0.6);
+            }
+            50% {
+                text-shadow: 0 3px 30px rgba(255, 0, 110, 0.8);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Enhanced Loading Bar with Wave */
+        .loading-bar {
+            width: 380px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin-top: 60px;
+            overflow: hidden;
+            position: relative;
+            animation: fadeInUp 1.5s ease-out 1.2s backwards;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa, #ff006e, #a855f7, #3b82f6);
+            background-size: 300% 100%;
+            border-radius: 15px;
+            animation: loading 3s ease-in-out, wave 2s ease-in-out infinite;
+            box-shadow: 0 0 30px rgba(96, 165, 250, 0.9);
+        }
+
+        @keyframes loading {
+            from {
+                width: 0%;
+            }
+            to {
+                width: 100%;
+            }
+        }
+
+        @keyframes wave {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        /* Enhanced Sparkles */
+        .sparkle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: linear-gradient(45deg, #60a5fa, #ff006e);
+            border-radius: 50%;
+            animation: sparkleFloat 3s ease-out infinite;
+            box-shadow: 0 0 15px #60a5fa, 0 0 30px #ff006e;
+        }
+
+        @keyframes sparkleFloat {
+            0% {
+                transform: translateY(0) scale(0.5) rotate(0deg);
+                opacity: 0;
+            }
+            25% {
+                opacity: 1;
+            }
+            75% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-150px) scale(1.2) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Mouse Tracking Particles */
+        .mouse-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: mouseTrail 1s ease-out forwards;
+        }
+
+        @keyframes mouseTrail {
+            to {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .welcome-text h1 {
+                font-size: 42px;
+            }
+
+            .welcome-text p {
+                font-size: 22px;
+            }
+
+            .user-name {
+                font-size: 28px;
+            }
+
+            .car-container {
+                width: 320px;
+                height: 200px;
+            }
+
+            .loading-bar {
+                width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Audio for Passing Car Sound -->
+    <audio autoplay loop>
+        <source src="car-passing-sound.mp3" type="audio/mpeg">
+        <!-- Replace 'car-passing-sound.mp3' with your actual audio file URL or path -->
+        <!-- If you don't have the file, you can download a free sound effect from sites like freesound.org -->
+        Your browser does not support the audio element.
+    </audio>
+
+    <div class="bg-animation">
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <!-- Add particles -->
+        <div class="particle" style="top: 20%; left: 20%; animation-delay: 0s;"></div>
+        <div class="particle" style="top: 50%; left: 70%; animation-delay: 2s;"></div>
+        <div class="particle" style="top: 80%; left: 40%; animation-delay: 4s;"></div>
+        <div class="particle" style="top: 30%; left: 80%; animation-delay: 6s;"></div>
+        <div class="particle" style="top: 70%; left: 10%; animation-delay: 8s;"></div>
+    </div>
+
+    <div class="welcome-container">
+        <!-- Modern Car Animation -->
+        <div class="car-container">
+            <svg class="car-svg" viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+                <!-- Car Shadow -->
+                <ellipse cx="200" cy="230" rx="140" ry="15" fill="rgba(0,0,0,0.3)"/>
+                
+                <!-- Car Body -->
+                <g class="car-body">
+                    <!-- Main Body Lower Part -->
+                    <path d="M 70 160 Q 60 160 60 150 L 60 130 Q 60 120 70 120 L 330 120 Q 340 120 340 130 L 340 150 Q 340 160 330 160 Z" 
+                          fill="#2563eb" stroke="#1e40af" stroke-width="2"/>
+                    
+                    <!-- Hood -->
+                    <path d="M 260 120 L 320 120 Q 335 120 340 110 L 350 90 Q 352 85 347 83 L 270 83 Q 265 83 263 88 Z" 
+                          fill="#3b82f6" stroke="#1e40af" stroke-width="2"/>
+                    
+                    <!-- Roof/Cabin -->
+                    <path d="M 90 120 L 260 120 L 245 75 Q 243 70 238 70 L 110 70 Q 105 70 103 75 Z" 
+                          fill="#1e3a5f" stroke="#1e40af" stroke-width="2"/>
+                    
+                    <!-- Windshield -->
+                    <path d="M 100 118 L 118 78 L 235 78 L 253 118 Z" 
+                          fill="#60a5fa" opacity="0.6" stroke="#3b82f6" stroke-width="1.5"/>
+                    
+                    <!-- Side Window -->
+                    <path d="M 265 118 L 275 95 L 320 95 L 328 118 Z" 
+                          fill="#60a5fa" opacity="0.6" stroke="#3b82f6" stroke-width="1.5"/>
+                    
+                    <!-- Front Light -->
+                    <ellipse cx="345" cy="95" rx="10" ry="15" fill="#f0f9ff" opacity="0.9"/>
+                    <ellipse cx="345" cy="95" rx="6" ry="10" fill="#ffffff"/>
+                    
+                    <!-- Back Light -->
+                    <rect x="63" y="135" width="15" height="10" rx="2" fill="#ef4444" opacity="0.9"/>
+                    
+                    <!-- Door Handle -->
+                    <rect x="150" y="128" width="22" height="5" rx="2" fill="#1e40af"/>
+                    
+                    <!-- Side Mirror -->
+                    <ellipse cx="95" cy="100" rx="10" ry="15" fill="#1e3a5f" stroke="#1e40af" stroke-width="1.5"/>
+                    
+                    <!-- Body Line Detail -->
+                    <path d="M 80 140 L 320 140" stroke="#1e3a5f" stroke-width="3" opacity="0.6"/>
+                    
+                    <!-- Front Wheel - NOW STATIC -->
+                    <g>
+                        <circle cx="120" cy="165" r="28" fill="#1f2937"/>
+                        <circle cx="120" cy="165" r="22" fill="#374151"/>
+                        <circle cx="120" cy="165" r="16" fill="#4b5563"/>
+                        <circle cx="120" cy="165" r="9" fill="#6b7280"/>
+                        <!-- Wheel Spokes - Static -->
+                        <line x1="120" y1="148" x2="120" y2="182" stroke="#9ca3af" stroke-width="2"/>
+                        <line x1="102" y1="165" x2="138" y2="165" stroke="#9ca3af" stroke-width="2"/>
+                        <line x1="107" y1="152" x2="133" y2="178" stroke="#9ca3af" stroke-width="1.5"/>
+                        <line x1="107" y1="178" x2="133" y2="152" stroke="#9ca3af" stroke-width="1.5"/>
+                    </g>
+                    
+                    <!-- Back Wheel - NOW STATIC -->
+                    <g>
+                        <circle cx="280" cy="165" r="28" fill="#1f2937"/>
+                        <circle cx="280" cy="165" r="22" fill="#374151"/>
+                        <circle cx="280" cy="165" r="16" fill="#4b5563"/>
+                        <circle cx="280" cy="165" r="9" fill="#6b7280"/>
+                        <!-- Wheel Spokes - Static -->
+                        <line x1="280" y1="148" x2="280" y2="182" stroke="#9ca3af" stroke-width="2"/>
+                        <line x1="262" y1="165" x2="298" y2="165" stroke="#9ca3af" stroke-width="2"/>
+                        <line x1="267" y1="152" x2="293" y2="178" stroke="#9ca3af" stroke-width="1.5"/>
+                        <line x1="267" y1="178" x2="293" y2="152" stroke="#9ca3af" stroke-width="1.5"/>
+                    </g>
+                    
+                    <!-- Wheel Covers (White rim) - Static -->
+                    <circle cx="120" cy="165" r="29" fill="none" stroke="#e0f2fe" stroke-width="3" opacity="0.9"/>
+                    <circle cx="280" cy="165" r="29" fill="none" stroke="#e0f2fe" stroke-width="3" opacity="0.9"/>
+                </g>
+            </svg>
+        </div>
+
+        <!-- Welcome Text -->
+        <div class="welcome-text">
+            <h1>✨ ברוך הבא! ✨</h1>
+            <p>ליומן הדרייבר שלך</p>
+            <p class="user-name" id="userName">טוען...</p>
+        </div>
+
+        <!-- Loading Bar -->
+        <div class="loading-bar">
+            <div class="loading-progress"></div>
+        </div>
+
+        <!-- Sparkles -->
+        <div class="sparkle" style="left: 15%; animation-delay: 0s;"></div>
+        <div class="sparkle" style="left: 35%; animation-delay: 0.8s;"></div>
+        <div class="sparkle" style="left: 55%; animation-delay: 1.6s;"></div>
+        <div class="sparkle" style="left: 75%; animation-delay: 2.4s;"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAWOhJ4pSWnzMXOt8reavRWiLWtRS1ivzQ",
+            authDomain: "my-driver-b0d00.firebaseapp.com",
+            projectId: "my-driver-b0d00",
+            storageBucket: "my-driver-b0d00.firebasestorage.app",
+            messagingSenderId: "752217263540",
+            appId: "1:752217263540:web:2719a734580d03579eb6e1",
+            measurementId: "G-2TCCSTYFL1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const displayName = user.displayName || user.email?.split('@')[0] || 'נהג מקצועי';
+                document.getElementById('userName').textContent = displayName;
+                
+                // Redirect after 3 seconds (increased for more effect)
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 3000);
+            } else {
+                // Not logged in - redirect immediately
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Enhanced sparkles and mouse tracking
+        setInterval(() => {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.style.left = Math.random() * 100 + '%';
+            sparkle.style.top = Math.random() * 80 + '%'; // Avoid bottom
+            sparkle.style.animationDelay = Math.random() * 3 + 's';
+            document.querySelector('.welcome-container').appendChild(sparkle);
+            
+            setTimeout(() => sparkle.remove(), 3000);
+        }, 500);
+
+        // Mouse tracking particles
+        document.addEventListener('mousemove', (e) => {
+            const particle = document.createElement('div');
+            particle.className = 'mouse-particle';
+            particle.style.left = e.clientX + 'px';
+            particle.style.top = e.clientY + 'px';
+            document.body.appendChild(particle);
+            
+            setTimeout(() => particle.remove(), 1000);
+        });
+    </script>
+</body>
+</html>
