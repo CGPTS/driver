@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>יומן משימות מודרני</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light Theme Colors */
+            --primary-bg: #ffffff;
+            --secondary-bg: #f8fafc;
+            --tertiary-bg: #f1f5f9;
+            --primary-text: #1e293b;
+            --secondary-text: #64748b;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --border-color: #e2e8f0;
+            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme Colors */
+            --primary-bg: #0f172a;
+            --secondary-bg: #1e293b;
+            --tertiary-bg: #334155;
+            --primary-text: #f1f5f9;
+            --secondary-text: #94a3b8;
+            --accent-color: #3b82f6;
+            --accent-hover: #60a5fa;
+            --border-color: #334155;
+            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+            --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--secondary-bg);
+            color: var(--primary-text);
+            line-height: 1.6;
+            direction: rtl;
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .app-container {
+            max-width: 428px;
+            margin: 0 auto;
+            background: var(--primary-bg);
+            min-height: 100vh;
+            box-shadow: var(--shadow-large);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: var(--primary-bg);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 12px;
+            background: var(--tertiary-bg);
+            color: var(--secondary-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--border-color);
+            transform: scale(1.05);
+        }
+
+        .theme-toggle {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 12px;
+            background: var(--tertiary-bg);
+            color: var(--secondary-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--border-color);
+            transform: scale(1.05);
+        }
+
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-text);
+            text-align: center;
+            margin: 0;
+        }
+
+        /* Date Navigation */
+        .date-nav {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .date-nav-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 10px;
+            background: var(--tertiary-bg);
+            color: var(--secondary-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .date-nav-btn:hover:not(:disabled) {
+            background: var(--accent-color);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .date-nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .current-date {
+            flex: 1;
+            text-align: center;
+            font-weight: 600;
+            color: var(--primary-text);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .current-date:hover {
+            background: var(--tertiary-bg);
+        }
+
+        .today-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--accent-color);
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .quick-action {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            background: var(--primary-bg);
+            color: var(--secondary-text);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .quick-action:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            transform: translateY(-1px);
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            padding: 0 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--primary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-text);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--secondary-text);
+            font-weight: 500;
+        }
+
+        /* Task Form */
+        .task-form {
+            padding: 1.5rem;
+            background: var(--primary-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: var(--primary-bg);
+            color: var(--primary-text);
+            transition: all 0.2s ease;
+            direction: rtl;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--secondary-text);
+        }
+
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        /* Priority Selector */
+        .priority-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .priority-option {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: var(--primary-bg);
+        }
+
+        .priority-option.high {
+            color: var(--danger-color);
+        }
+
+        .priority-option.medium {
+            color: var(--warning-color);
+        }
+
+        .priority-option.low {
+            color: var(--success-color);
+        }
+
+        .priority-option.selected {
+    border-color: currentColor;
+    border-width: 2px;
+    background: rgba(255, 255, 255, 0.15);
+    color: currentColor;
+    transform: scale(1.05);
+    box-shadow: 0 0 0 2px currentColor;
+}
+
+        .priority-option:hover:not(.selected) {
+            border-color: currentColor;
+            transform: translateY(-1px);
+        }
+
+        .add-task-btn {
+            width: 100%;
+            padding: 0.875rem;
+            border: none;
+            border-radius: 12px;
+            background: var(--gradient-primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .add-task-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .add-task-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            padding: 1rem 1.5rem 0;
+            gap: 0.5rem;
+        }
+
+        .filter-tab {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 20px;
+            background: transparent;
+            color: var(--secondary-text);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .filter-tab.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .filter-tab:hover:not(.active) {
+            background: var(--tertiary-bg);
+        }
+
+        /* Tasks Container */
+        .tasks-container {
+            padding: 1.5rem;
+            min-height: 300px;
+        }
+
+        .task-card {
+            background: var(--primary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .task-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .task-card.high::before { background: var(--gradient-danger); }
+        .task-card.medium::before { background: var(--gradient-warning); }
+        .task-card.low::before { background: var(--gradient-success); }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .task-card:hover::before {
+            width: 6px;
+        }
+
+        .task-card.completed {
+            opacity: 0.6;
+        }
+
+        .task-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .task-checkbox.completed {
+            background: var(--gradient-success);
+            border-color: var(--success-color);
+            color: white;
+        }
+
+        .task-checkbox:hover {
+            border-color: var(--success-color);
+            transform: scale(1.1);
+        }
+
+        .task-title {
+            font-weight: 600;
+            color: var(--primary-text);
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .task-title.completed {
+            text-decoration: line-through;
+            color: var(--secondary-text);
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 0.25rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .task-card:hover .task-actions {
+            opacity: 1;
+        }
+
+        .task-action-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+        }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .delete-btn:hover {
+            background: var(--danger-color);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .task-description {
+            color: var(--secondary-text);
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+
+        .task-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--secondary-text);
+        }
+
+        .priority-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        .priority-badge.high {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .priority-badge.medium {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .priority-badge.low {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--secondary-text);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary-text);
+        }
+
+        /* Date Picker */
+        .date-picker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .date-picker.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .date-picker-content {
+            background: var(--primary-bg);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin: 1rem;
+            box-shadow: var(--shadow-large);
+            max-width: 320px;
+            width: 100%;
+        }
+
+        .date-picker input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            direction: ltr;
+            text-align: center;
+            background: var(--primary-bg);
+            color: var(--primary-text);
+        }
+
+        .quick-dates {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .quick-date-btn {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--primary-bg);
+            color: var(--secondary-text);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quick-date-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .date-picker-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .date-picker-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .date-picker-btn.primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .date-picker-btn.secondary {
+            background: var(--tertiary-bg);
+            color: var(--secondary-text);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .task-card.new {
+            animation: slideUp 0.3s ease;
+        }
+
+        /* Touch Feedback */
+        .touch-feedback {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .touch-feedback::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+
+        .touch-feedback:active::after {
+            width: 200px;
+            height: 200px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .app-container {
+                max-width: 100%;
+                box-shadow: none;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+            
+            .stats {
+                padding: 0 1rem;
+            }
+            
+            .task-form,
+            .tasks-container {
+                padding: 1rem;
+            }
+        }
+
+        /* Swipe indicators */
+        .swipe-indicator {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            font-size: 1.2rem;
+            z-index: 10;
+        }
+
+        .swipe-indicator.left {
+            left: 1rem;
+            color: var(--success-color);
+        }
+
+        .swipe-indicator.right {
+            right: 1rem;
+            color: var(--danger-color);
+        }
+
+        .task-card.swiping .swipe-indicator {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-top">
+                <button class="back-btn" onclick="goBackToIndex()" title="חזרה">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <h1 class="app-title">משימות</h1>
+                <button class="theme-toggle" onclick="toggleTheme()" title="החלף ערכת נושא">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+            </div>
+            
+            <div class="date-nav">
+                <button class="date-nav-btn" id="prevBtn" onclick="changeDate(-1)">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                
+                <div class="current-date" id="currentDate" onclick="openDatePicker()">
+                    <span id="todayBadge" class="today-badge" style="display: none;">היום</span>
+                </div>
+                
+                <button class="date-nav-btn" id="nextBtn" onclick="changeDate(1)">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+            
+            <div class="quick-actions">
+                <button class="quick-action" onclick="goToToday()">
+                    <i class="fas fa-home"></i> היום
+                </button>
+                <button class="quick-action" onclick="goToWeekStart()">
+                    <i class="fas fa-calendar-week"></i> השבוע
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats -->
+        <section class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalTasks">0</div>
+                <div class="stat-label">סה"כ</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completedTasks">0</div>
+                <div class="stat-label">הושלמו</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pendingTasks">0</div>
+                <div class="stat-label">נותרו</div>
+            </div>
+        </section>
+
+        <!-- Task Form -->
+        <section class="task-form">
+            <form id="taskForm">
+                <div class="form-group">
+                    <input type="text" class="form-input" id="taskTitle" placeholder="הוסף משימה חדשה..." required>
+                </div>
+                
+                <div class="form-group">
+                    <textarea class="form-input form-textarea" id="taskDescription" placeholder="תיאור נוסף (אופציונלי)"></textarea>
+                </div>
+                
+                <div class="priority-selector">
+                    <div class="priority-option high" data-priority="high">
+                        <i class="fas fa-exclamation"></i> דחוף
+                    </div>
+                    <div class="priority-option medium selected" data-priority="medium">
+                        <i class="fas fa-minus"></i> רגיל
+                    </div>
+                    <div class="priority-option low" data-priority="low">
+                        <i class="fas fa-arrow-down"></i> נמוך
+                    </div>
+                </div>
+                
+                <button type="submit" class="add-task-btn touch-feedback">
+                    <i class="fas fa-plus"></i>
+                    הוסף משימה
+                </button>
+            </form>
+        </section>
+
+        <!-- Filter Tabs -->
+        <nav class="filter-tabs">
+            <button class="filter-tab active" data-filter="all">הכל</button>
+            <button class="filter-tab" data-filter="pending">פעילות</button>
+            <button class="filter-tab" data-filter="completed">הושלמו</button>
+        </nav>
+
+        <!-- Tasks -->
+        <main class="tasks-container" id="tasksContainer">
+            <div class="empty-state">
+                <i class="fas fa-clipboard-list"></i>
+                <h3>אין משימות עדיין</h3>
+                <p>הוסף את המשימה הראשונה שלך</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Date Picker Modal -->
+    <div class="date-picker" id="datePicker">
+        <div class="date-picker-content">
+            <input type="date" id="dateInput" onchange="selectSpecificDate()">
+            
+            <div class="quick-dates">
+                <button class="quick-date-btn" onclick="goToToday(); closeDatePicker()">היום</button>
+                <button class="quick-date-btn" onclick="goToTomorrow(); closeDatePicker()">מחר</button>
+                <button class="quick-date-btn" onclick="goToWeekStart(); closeDatePicker()">השבוע</button>
+                <button class="quick-date-btn" onclick="goToWeekEnd(); closeDatePicker()">סוף השבוע</button>
+            </div>
+            
+            <div class="date-picker-actions">
+                <button class="date-picker-btn secondary" onclick="closeDatePicker()">ביטול</button>
+                <button class="date-picker-btn primary" onclick="goToToday(); closeDatePicker()">היום</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        let allTasks = JSON.parse(localStorage.getItem('modernTasksCalendar')) || {};
+        let selectedPriority = 'medium';
+        let currentFilter = 'all';
+        let currentDate = new Date();
+        let theme = localStorage.getItem('theme') || 'light';
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
+            updateDateDisplay();
+            setupEventListeners();
+            setupTouchGestures();
+        });
+
+        // Theme Management
+        function initializeTheme() {
+            document.documentElement.setAttribute('data-theme', theme);
+            updateThemeIcon();
+        }
+
+        function toggleTheme() {
+            theme = theme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const icon = document.getElementById('themeIcon');
+            icon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+        }
+
+        // Date utilities
+        function formatDateKey(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function getCurrentDateTasks() {
+            const dateKey = formatDateKey(currentDate);
+            return allTasks[dateKey] || [];
+        }
+
+        function saveCurrentDateTasks(tasks) {
+            const dateKey = formatDateKey(currentDate);
+            allTasks[dateKey] = tasks;
+            localStorage.setItem('modernTasksCalendar', JSON.stringify(allTasks));
+        }
+
+        // Date Navigation
+        function updateDateDisplay() {
+            const today = new Date();
+            const isToday = formatDateKey(currentDate) === formatDateKey(today);
+            
+            document.getElementById('currentDate').innerHTML = `
+                ${isToday ? '<span class="today-badge">היום</span>' : ''}
+                ${currentDate.toLocaleDateString('he-IL', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long'
+                })}
+            `;
+
+            document.getElementById('dateInput').value = formatDateKey(currentDate);
+            updateStats();
+            renderTasks();
+        }
+
+        function changeDate(days) {
+            currentDate.setDate(currentDate.getDate() + days);
+            updateDateDisplay();
+        }
+
+        function goToToday() {
+            currentDate = new Date();
+            updateDateDisplay();
+        }
+
+        function goToTomorrow() {
+            currentDate = new Date();
+            currentDate.setDate(currentDate.getDate() + 1);
+            updateDateDisplay();
+        }
+
+        function goToWeekStart() {
+            currentDate = new Date();
+            const day = currentDate.getDay();
+            currentDate.setDate(currentDate.getDate() - day);
+            updateDateDisplay();
+        }
+
+        function goToWeekEnd() {
+            currentDate = new Date();
+            const day = currentDate.getDay();
+            currentDate.setDate(currentDate.getDate() + (6 - day));
+            updateDateDisplay();
+        }
+
+        function selectSpecificDate() {
+            const selectedDate = document.getElementById('dateInput').value;
+            if (selectedDate) {
+                currentDate = new Date(selectedDate + 'T12:00:00');
+                updateDateDisplay();
+                closeDatePicker();
+            }
+        }
+
+        function openDatePicker() {
+            document.getElementById('datePicker').classList.add('show');
+        }
+
+        function closeDatePicker() {
+            document.getElementById('datePicker').classList.remove('show');
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Priority selection
+            document.querySelectorAll('.priority-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    document.querySelectorAll('.priority-option').forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    selectedPriority = option.dataset.priority;
+                });
+            });
+
+            // Form submission
+            document.getElementById('taskForm').addEventListener('submit', handleTaskSubmit);
+
+            // Filter tabs
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentFilter = tab.dataset.filter;
+                    renderTasks();
+                });
+            });
+
+            // Close date picker on outside click
+            document.getElementById('datePicker').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('datePicker')) {
+                    closeDatePicker();
+                }
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', handleKeyboardShortcuts);
+        }
+
+        function handleTaskSubmit(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('taskTitle').value.trim();
+            const description = document.getElementById('taskDescription').value.trim();
+            
+            if (!title) return;
+
+            const newTask = {
+                id: Date.now(),
+                title,
+                description,
+                priority: selectedPriority,
+                completed: false,
+                createdAt: new Date().toISOString(),
+                completedAt: null,
+                date: formatDateKey(currentDate)
+            };
+
+            const tasks = getCurrentDateTasks();
+            tasks.unshift(newTask);
+            saveCurrentDateTasks(tasks);
+            updateStats();
+            renderTasks();
+            
+            // Add animation to new task
+            setTimeout(() => {
+                const newTaskElement = document.querySelector('.task-card:first-child');
+                if (newTaskElement) {
+                    newTaskElement.classList.add('new');
+                }
+            }, 100);
+            
+            // Reset form
+            e.target.reset();
+            document.querySelectorAll('.priority-option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelector('.priority-option.medium').classList.add('selected');
+            selectedPriority = 'medium';
+        }
+
+        function handleKeyboardShortcuts(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                document.getElementById('taskForm').dispatchEvent(new Event('submit'));
+            } else if (e.key === 'ArrowLeft') {
+                changeDate(1);
+            } else if (e.key === 'ArrowRight') {
+                changeDate(-1);
+            } else if (e.key === 'Escape') {
+                closeDatePicker();
+            } else if (e.key === 'h' || e.key === 'ה') {
+                goToToday();
+            }
+        }
+
+        // Touch Gestures
+        function setupTouchGestures() {
+            let startX, startY, currentElement;
+
+            document.addEventListener('touchstart', (e) => {
+                if (e.target.closest('.task-card')) {
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    currentElement = e.target.closest('.task-card');
+                }
+            });
+
+            document.addEventListener('touchmove', (e) => {
+                if (!currentElement) return;
+                
+                const deltaX = e.touches[0].clientX - startX;
+                const deltaY = e.touches[0].clientY - startY;
+                
+                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 20) {
+                    e.preventDefault();
+                    currentElement.style.transform = `translateX(${deltaX}px)`;
+                    currentElement.classList.add('swiping');
+                    
+                    // Show appropriate indicator
+                    if (deltaX > 50) {
+                        // Swipe right - complete
+                        currentElement.querySelector('.swipe-indicator.left').style.opacity = '1';
+                    } else if (deltaX < -50) {
+                        // Swipe left - delete
+                        currentElement.querySelector('.swipe-indicator.right').style.opacity = '1';
+                    }
+                }
+            });
+
+            document.addEventListener('touchend', (e) => {
+                if (!currentElement) return;
+                
+                const deltaX = e.changedTouches[0].clientX - startX;
+                
+                if (Math.abs(deltaX) > 100) {
+                    const taskId = parseInt(currentElement.dataset.taskId);
+                    
+                    if (deltaX > 0) {
+                        // Complete task
+                        toggleTask(taskId);
+                    } else {
+                        // Delete task
+                        deleteTask(taskId);
+                    }
+                }
+                
+                // Reset
+                if (currentElement) {
+                    currentElement.style.transform = '';
+                    currentElement.classList.remove('swiping');
+                    currentElement.querySelectorAll('.swipe-indicator').forEach(indicator => {
+                        indicator.style.opacity = '0';
+                    });
+                }
+                
+                currentElement = null;
+            });
+        }
+
+        // Task Management
+        function updateStats() {
+            const tasks = getCurrentDateTasks();
+            const total = tasks.length;
+            const completed = tasks.filter(task => task.completed).length;
+            const pending = total - completed;
+
+            animateNumber('totalTasks', total);
+            animateNumber('completedTasks', completed);
+            animateNumber('pendingTasks', pending);
+        }
+
+        function animateNumber(elementId, newValue) {
+            const element = document.getElementById(elementId);
+            const currentValue = parseInt(element.textContent);
+            
+            if (currentValue !== newValue) {
+                element.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    element.textContent = newValue;
+                    element.style.transform = '';
+                }, 150);
+            }
+        }
+function goBackToIndex() {
+    try {
+        // נסה לחזור לדף הקודם
+        window.history.back();
+        
+        // אם אחרי 100ms עדיין באותו דף, לך לדף הבית
+        setTimeout(() => {
+            if (window.location.pathname.includes(getCurrentPageName())) {
+                window.location.href = 'index.html';
+            }
+        }, 100);
+    } catch (error) {
+        // במקרה של שגיאה, לך לדף הבית
+        window.location.href = 'index.html';
+    }
+}
+
+function getCurrentPageName() {
+    return window.location.pathname.split('/').pop();
+}	
+
+        function renderTasks() {
+            const container = document.getElementById('tasksContainer');
+            const tasks = getCurrentDateTasks();
+            
+            let filteredTasks = tasks;
+            if (currentFilter === 'pending') {
+                filteredTasks = tasks.filter(task => !task.completed);
+            } else if (currentFilter === 'completed') {
+                filteredTasks = tasks.filter(task => task.completed);
+            }
+
+            if (filteredTasks.length === 0) {
+                const emptyMessages = {
+                    all: { title: 'אין משימות', subtitle: 'הוסף משימה חדשה כדי להתחיל' },
+                    pending: { title: 'כל המשימות הושלמו! 🎉', subtitle: 'יום פרודוקטיבי!' },
+                    completed: { title: 'עדיין לא הושלמו משימות', subtitle: 'התחל לעבוד על המשימות שלך' }
+                };
+                
+                const message = emptyMessages[currentFilter];
+                
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list"></i>
+                        <h3>${message.title}</h3>
+                        <p>${message.subtitle}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredTasks.map(task => `
+                <div class="task-card ${task.priority} ${task.completed ? 'completed' : ''}" data-task-id="${task.id}">
+                    <div class="swipe-indicator left">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="swipe-indicator right">
+                        <i class="fas fa-trash"></i>
+                    </div>
+                    
+                    <div class="task-header">
+                        <div class="task-checkbox ${task.completed ? 'completed' : ''}" onclick="toggleTask(${task.id})">
+                            ${task.completed ? '<i class="fas fa-check"></i>' : ''}
+                        </div>
+                        <div class="task-title ${task.completed ? 'completed' : ''}">${escapeHtml(task.title)}</div>
+                        <div class="task-actions">
+                            <button class="task-action-btn delete-btn" onclick="deleteTask(${task.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    ${task.description ? `<div class="task-description">${escapeHtml(task.description)}</div>` : ''}
+                    
+                    <div class="task-meta">
+                        <span>${new Date(task.createdAt).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}</span>
+                        <div class="priority-badge ${task.priority}">
+                            ${task.priority === 'high' ? 'דחוף' : task.priority === 'medium' ? 'רגיל' : 'נמוך'}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleTask(id) {
+            const tasks = getCurrentDateTasks();
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                task.completedAt = task.completed ? new Date().toISOString() : null;
+                saveCurrentDateTasks(tasks);
+                updateStats();
+                renderTasks();
+            }
+        }
+
+        function deleteTask(id) {
+            const tasks = getCurrentDateTasks();
+            const filteredTasks = tasks.filter(t => t.id !== id);
+            saveCurrentDateTasks(filteredTasks);
+            updateStats();
+            renderTasks();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
